@@ -45,41 +45,23 @@ local function MyLv()
     return ok and tonumber(v) or 1
 end
 
--- ── VERIFICAÇÃO DE QUEST (via UI — mais confiável) ──
--- True se a barra de quest está visível na tela
+-- ── VERIFICAÇÃO DE QUEST ──
+-- Usa LP.Data.QuestName.Value -- vazio = sem quest
 local function QuestAtiva()
-    -- Check 1: frame de quest visível no PlayerGui
-    local ok1, v1 = pcall(function()
-        local main = LP.PlayerGui:FindFirstChild("Main")
-        if not main then return false end
-        local q = main:FindFirstChild("Quest")
-        return q and q.Visible == true
-    end)
-    if ok1 and v1 then return true end
-
-    -- Check 2: LP.Data.QuestName não está vazio
-    local ok2, v2 = pcall(function()
+    local ok, v = pcall(function()
         return LP.Data.QuestName.Value
     end)
-    if ok2 and v2 and v2 ~= "" then return true end
-
-    return false
+    return ok and v ~= nil and v ~= ""
 end
 
--- Fecha o diálogo do NPC automaticamente
+-- Fecha qualquer diálogo aberto (safety)
 local function FecharDialogo()
     Try(function()
-        -- Fecha via data
-        local dlg = LP.PlayerGui:FindFirstChild("Main")
-        if dlg then
-            local d = dlg:FindFirstChild("Dialogue")
-            if d then d.Visible = false end
+        local main = LP.PlayerGui:FindFirstChild("Main")
+        if main then
+            local dlg = main:FindFirstChild("Dialogue")
+            if dlg then dlg.Visible = false end
         end
-    end)
-    -- Pressiona E pra fechar prompt se ainda aberto
-    Try(function()
-        VIM:SendKeyEvent(true,  "E", false, game)
-        VIM:SendKeyEvent(false, "E", false, game)
     end)
 end
 
@@ -217,17 +199,18 @@ end
 -- ╔══════════════════════════════╗
 -- ║    PEGAR MISSÃO              ║
 -- ╚══════════════════════════════╝
+-- ╔══════════════════╗
+-- ║    PEGAR MISSÃO     ║
+-- ╚══════════════════╝
+-- NAO precisa teleportar para o NPC!
+-- CommF_ funciona de qualquer lugar do mapa
+-- TP perto do NPC = bug (abre dialogo automatico)
 local function PegarMissao()
-    if not S.QuestCF or not S.QuestName then return end
-    StopFloat()
-    TP(S.QuestCF)          -- vai até o NPC
-    task.wait(1.2)         -- espera um pouco mais pra não buggar
-    -- dispara o remote REAL do BF para aceitar quest
+    if not S.QuestName then return end
+    -- Dispara o remote direto -- sem TP, sem dialogo
     CommF("AskForQuest", S.QuestName, S.QuestSlot)
-    task.wait(0.5)
-    FecharDialogo()        -- fecha o diálogo do NPC
-    task.wait(0.5)
-    StartFloat()
+    task.wait(0.8)
+    FecharDialogo() -- fecha qualquer dialogo que abriu
 end
 
 -- ╔══════════════════════════════╗
@@ -294,27 +277,22 @@ local function FarmLoop()
 
                 UpdateQuest()
 
-                -- SE NÃO TEM QUEST ATIVA → pega missão primeiro
+                -- Sem quest? pega direto via remote, sem TP
                 if not QuestAtiva() then
                     PegarMissao()
-                    task.wait(1) -- espera a quest registrar antes de verificar de novo
+                    task.wait(1)
                     return
                 end
 
-                -- TEM QUEST → garante que diálogo está fechado
-                FecharDialogo()
-
-                -- mata mob
+                -- Tem quest: mata mob
                 local mob = S.FarmMon and FindMob(S.FarmMon)
                 if mob then
                     Atacar(mob)
                 else
-                    -- sem mob na área → TP pro spawn deles
                     TP(S.FarmCF)
                     task.wait(0.3)
                 end
             end)
-
             task.wait(0.05)
         end
 
