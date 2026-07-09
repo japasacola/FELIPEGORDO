@@ -3,21 +3,17 @@
 --  FIXES: ataca do AR | quest auto | kill rápido | só fighting style
 --  Executor: Synapse X / KRNL / Fluxus / Delta
 -- ============================================================
-
 local Players          = game:GetService("Players")
 local RS               = game:GetService("ReplicatedStorage")
 local TweenService     = game:GetService("TweenService")
 local VIM              = game:GetService("VirtualInputManager")
 local UIS              = game:GetService("UserInputService")
-
 local LP               = Players.LocalPlayer
 local Mouse            = LP:GetMouse()
-
 -- World detection via PlaceId
 local World1 = game.PlaceId == 2753915549 or game.PlaceId == 85211729168715
 local World2 = game.PlaceId == 4442272183 or game.PlaceId == 79091703265657
 local World3 = game.PlaceId == 7449423635 or game.PlaceId == 100117331123089
-
 -- ╔═══════════════╗
 -- ║     STATE     ║
 -- ╚═══════════════╝
@@ -27,7 +23,6 @@ local S = {
     BringMobs  = false,
     SpeedHack  = false,
     AntiAFK    = false,
-
     FarmMon    = nil,
     FarmCF     = nil,
     QuestCF    = nil,
@@ -35,22 +30,18 @@ local S = {
     QuestSlot  = 1,
 }
 local Threads = {}
-
 -- ╔══════════════════╗
 -- ║    SAFE FUNCS    ║
 -- ╚══════════════════╝
 local function Try(fn) pcall(fn) end
-
 local function GetChar()  return LP.Character end
 local function GetHRP()   local c=GetChar(); return c and c:FindFirstChild("HumanoidRootPart") end
 local function GetHum()   local c=GetChar(); return c and c:FindFirstChildOfClass("Humanoid") end
 local function IsAlive()  local h=GetHum();  return h and h.Health > 0 end
-
 local function MyLevel()
     local ok, v = pcall(function() return LP.Data.Level.Value end)
     return ok and tonumber(v) or 1
 end
-
 -- Teleport
 local function TP(cf)
     Try(function()
@@ -58,7 +49,6 @@ local function TP(cf)
         if hrp then hrp.CFrame = cf end
     end)
 end
-
 -- CommF_ invoke (returns result)
 local function CommF(...)
     local args = {...}
@@ -67,7 +57,6 @@ local function CommF(...)
     end)
     return ok and res or nil
 end
-
 -- Mouse LEFT CLICK (fighting style only — no skills)
 local function Click()
     Try(function()
@@ -75,7 +64,6 @@ local function Click()
         VIM:SendMouseButtonEvent(0, 0, 0, false, game, 1)
     end)
 end
-
 -- Kill thread
 local function Kill(k)
     if Threads[k] then
@@ -83,7 +71,6 @@ local function Kill(k)
         Threads[k] = nil
     end
 end
-
 -- ╔══════════════════╗
 -- ║   QUEST MAP      ║
 -- ╚══════════════════╝
@@ -160,7 +147,6 @@ local function UpdateQuest()
         S.QuestCF=CFrame.new(1059,15,1550); S.FarmCF=CFrame.new(1045,27,1560)
     end
 end
-
 -- ╔══════════════════╗
 -- ║   FARM LOGIC     ║
 -- ╚══════════════════╝
@@ -174,18 +160,14 @@ local function HasQuest()
     end)
     return ok and v
 end
-
 local function AcceptQuest()
     if not S.QuestCF or not S.QuestName then return end
-
     -- 1. TP to quest NPC
     TP(S.QuestCF)
     task.wait(0.8)
-
     -- 2. Fire the real CommF_ remote (primary method)
     CommF("AskForQuest", S.QuestName, S.QuestSlot)
     task.wait(0.5)
-
     -- 3. Fallback: fire any quest proximity prompt nearby
     if not HasQuest() then
         for _, v in ipairs(workspace:GetDescendants()) do
@@ -199,10 +181,8 @@ local function AcceptQuest()
             end
         end
     end
-
     task.wait(0.3)
 end
-
 local function FindMob(name)
     for _, m in ipairs(workspace.Enemies:GetChildren()) do
         if m.Name == name then
@@ -212,63 +192,71 @@ local function FindMob(name)
         end
     end
 end
-
 local function Attack(mob)
     if not mob then return end
     local mr = mob:FindFirstChild("HumanoidRootPart")
     if not mr then return end
-
-    -- TP ACIMA do mob para atacar do ar e não levar dano
-    -- Fica 20 studs acima e levemente atrás
-    TP(mr.CFrame * CFrame.new(0, 20, 0))
-    task.wait(0.03)
-
-    -- Aponta o mouse pro mob (para o fighting style acertar)
+    -- TP BEM ALTO acima do mob — 60 studs, totalmente fora do alcance
+    local above = mr.CFrame * CFrame.new(0, 60, 0)
+    TP(above)
+    task.wait(0.05)
+    -- Aponta o mouse pro mob para o fighting style acertar
     Try(function()
         local cam = workspace.CurrentCamera
-        local screenPos, onScreen = cam:WorldToScreenPoint(mr.Position)
+        local sp, onScreen = cam:WorldToScreenPoint(mr.Position)
         if onScreen then
-            VIM:SendMouseMoveEvent(screenPos.X, screenPos.Y, game)
+            VIM:SendMouseMoveEvent(sp.X, sp.Y, game)
         end
     end)
-
-    -- Clique do mouse = fighting style attack (SEM skills Z/X/C)
-    Click()
-    task.wait(0.03)
-    Click()
-    task.wait(0.03)
-    Click()
+    -- 5 cliques rápidos = fighting style puro, sem skills
+    for i = 1, 5 do
+        Click()
+        task.wait(0.02)
+    end
 end
-
 local function FarmLoop()
     return task.spawn(function()
-        local questTimer = 0
+        -- Quest timer separado — tenta aceitar a cada 8 segundos
+        task.spawn(function()
+            while S.AutoFarm do
+                UpdateQuest()
+                if S.QuestName then
+                    TP(S.QuestCF)
+                    task.wait(0.8)
+                    -- Tenta via CommF_ direto
+                    CommF("AskForQuest", S.QuestName, S.QuestSlot)
+                    task.wait(0.5)
+                    -- Tenta via ProximityPrompt como fallback
+                    for _, v in ipairs(workspace:GetDescendants()) do
+                        if v:IsA("ProximityPrompt") then
+                            local t = (v.ActionText..v.ObjectText):lower()
+                            if t:find("quest") or t:find("miss") or t:find("npc") then
+                                pcall(fireproximityprompt, v)
+                                task.wait(0.2)
+                                break
+                            end
+                        end
+                    end
+                end
+                task.wait(8)
+            end
+        end)
+        -- Farm loop principal — SÓ mata mobs, sem parar pra quest
         while S.AutoFarm do
             Try(function()
                 if not IsAlive() then task.wait(2) return end
-
-                UpdateQuest()
-
-                -- Verifica quest a cada 5 segundos (não a cada frame)
-                if not HasQuest() and (tick() - questTimer) > 5 then
-                    questTimer = tick()
-                    AcceptQuest()
-                end
-
                 local mob = S.FarmMon and FindMob(S.FarmMon)
                 if mob then
                     Attack(mob)
                 elseif S.FarmCF then
-                    -- Sem mob na area, TP pro spawn
                     TP(S.FarmCF)
-                    task.wait(0.5)
+                    task.wait(0.3)
                 end
             end)
-            task.wait(0.05) -- loop mais rápido
+            task.wait(0.05)
         end
     end)
 end
-
 local function RaidLoop()
     return task.spawn(function()
         while S.AutoRaid do
@@ -306,7 +294,6 @@ local function RaidLoop()
         end
     end)
 end
-
 local function AntiAFKLoop()
     return task.spawn(function()
         while S.AntiAFK do
@@ -318,7 +305,6 @@ local function AntiAFKLoop()
         end
     end)
 end
-
 -- ╔══════════════════╗
 -- ║  TOGGLE HANDLER  ║
 -- ╚══════════════════╝
@@ -348,7 +334,6 @@ local function Toggle(key, val, cb)
         end
     end
 end
-
 -- Reapply speed on respawn
 LP.CharacterAdded:Connect(function(c)
     task.wait(1)
@@ -357,19 +342,16 @@ LP.CharacterAdded:Connect(function(c)
         h.WalkSpeed = 80; h.JumpPower = 75
     end
 end)
-
 -- ╔══════════════════╗
 -- ║       GUI        ║
 -- ╚══════════════════╝
 -- remove old
 local old = LP.PlayerGui:FindFirstChild("BH3")
 if old then old:Destroy() end
-
 local GUI = Instance.new("ScreenGui")
 GUI.Name="BH3"; GUI.ResetOnSpawn=false
 GUI.IgnoreGuiInset=true; GUI.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
 GUI.Parent=LP.PlayerGui
-
 -- MAIN WINDOW
 local Win = Instance.new("Frame")
 Win.Name="Win"; Win.Size=UDim2.new(0,660,0,430)
@@ -380,7 +362,6 @@ Win.ClipsDescendants=true; Win.Parent=GUI
 Instance.new("UICorner",Win).CornerRadius=UDim.new(0,12)
 local ws=Instance.new("UIStroke",Win)
 ws.Color=Color3.fromRGB(138,43,226); ws.Thickness=1.5
-
 -- TOPBAR
 local Top=Instance.new("Frame",Win)
 Top.Size=UDim2.new(1,0,0,48); Top.BackgroundColor3=Color3.fromRGB(18,18,28)
@@ -392,7 +373,6 @@ local ttl=Instance.new("TextLabel",Top)
 ttl.Text="  ⚡ Beast Hub : Blox Fruits"; ttl.Size=UDim2.new(1,-120,1,0)
 ttl.BackgroundTransparency=1; ttl.TextColor3=Color3.fromRGB(200,140,255)
 ttl.Font=Enum.Font.GothamBold; ttl.TextSize=15; ttl.TextXAlignment=Enum.TextXAlignment.Left
-
 local function HBtn(txt,col,x)
     local b=Instance.new("TextButton",Top)
     b.Size=UDim2.new(0,36,0,26); b.Position=UDim2.new(1,x,0.5,-13)
@@ -407,12 +387,10 @@ HBtn("─",Color3.fromRGB(60,60,80),-84).MouseButton1Click:Connect(function()
     mini=not mini
     Win.Size=mini and UDim2.new(0,660,0,48) or UDim2.new(0,660,0,430)
 end)
-
 -- SIDEBAR
 local Side=Instance.new("Frame",Win)
 Side.Size=UDim2.new(0,170,1,-48); Side.Position=UDim2.new(0,0,0,48)
 Side.BackgroundColor3=Color3.fromRGB(14,14,22); Side.BorderSizePixel=0
-
 local SList=Instance.new("Frame",Side)
 SList.Size=UDim2.new(1,0,1,-10); SList.Position=UDim2.new(0,0,0,10)
 SList.BackgroundTransparency=1
@@ -420,19 +398,16 @@ local SLL=Instance.new("UIListLayout",SList)
 SLL.Padding=UDim.new(0,3); SLL.SortOrder=Enum.SortOrder.LayoutOrder
 local SLP=Instance.new("UIPadding",SList)
 SLP.PaddingLeft=UDim.new(0,6); SLP.PaddingRight=UDim.new(0,6)
-
 -- DIVIDER
 local dv=Instance.new("Frame",Win)
 dv.Size=UDim2.new(0,1,1,-48); dv.Position=UDim2.new(0,170,0,48)
 dv.BackgroundColor3=Color3.fromRGB(80,30,140); dv.BorderSizePixel=0
-
 -- CONTENT AREA
 local CA=Instance.new("Frame",Win)
 CA.Name="CA"; CA.Size=UDim2.new(1,-170,1,-72)
 CA.Position=UDim2.new(0,170,0,48)
 CA.BackgroundColor3=Color3.fromRGB(12,12,20); CA.BorderSizePixel=0
 CA.ClipsDescendants=true
-
 -- STATUS BAR
 local SBar=Instance.new("Frame",Win)
 SBar.Size=UDim2.new(1,-170,0,22); SBar.Position=UDim2.new(0,170,1,-22)
@@ -441,10 +416,8 @@ local SLbl=Instance.new("TextLabel",SBar)
 SLbl.Size=UDim2.new(1,-6,1,0); SLbl.Position=UDim2.new(0,6,0,0)
 SLbl.BackgroundTransparency=1; SLbl.TextColor3=Color3.fromRGB(120,100,170)
 SLbl.Font=Enum.Font.Gotham; SLbl.TextSize=11; SLbl.TextXAlignment=Enum.TextXAlignment.Left
-
 -- GUI helpers
 local SBtns={} local Frames={} local CurSec="Farm"
-
 local function MkScroll()
     local sf=Instance.new("ScrollingFrame",CA)
     sf.Size=UDim2.new(1,0,1,0); sf.BackgroundTransparency=1
@@ -454,14 +427,12 @@ local function MkScroll()
     sf.AutomaticCanvasSize=Enum.AutomaticSize.Y
     sf.Visible=false; return sf
 end
-
 local function SecLbl(p,t,y)
     local l=Instance.new("TextLabel",p)
     l.Text=t; l.Size=UDim2.new(1,-20,0,30); l.Position=UDim2.new(0,10,0,y)
     l.BackgroundTransparency=1; l.TextColor3=Color3.fromRGB(138,43,226)
     l.Font=Enum.Font.GothamBold; l.TextSize=14; l.TextXAlignment=Enum.TextXAlignment.Center
 end
-
 local function CkRow(p,lbl,key,y)
     local row=Instance.new("Frame",p)
     row.Size=UDim2.new(1,-16,0,44); row.Position=UDim2.new(0,8,0,y)
@@ -485,7 +456,6 @@ local function CkRow(p,lbl,key,y)
     row.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then go() end end)
     return cb
 end
-
 -- SECTIONS
 local FarmF=MkScroll()
 SecLbl(FarmF,"Farm",6)
@@ -495,7 +465,6 @@ SecLbl(FarmF,"Extras",148)
 CkRow(FarmF,"Speed Hack","SpeedHack",184)
 CkRow(FarmF,"Anti AFK","AntiAFK",234)
 Frames["Farm"]=FarmF
-
 -- Status info inside farm tab
 UpdateQuest()
 local InfoLbl=Instance.new("TextLabel",FarmF)
@@ -505,7 +474,6 @@ InfoLbl.TextColor3=Color3.fromRGB(160,130,220); InfoLbl.Font=Enum.Font.Gotham
 InfoLbl.TextSize=12; InfoLbl.TextWrapped=true
 InfoLbl.Text="Level: "..MyLevel().." | Target: "..(S.FarmMon or "?")
 Instance.new("UICorner",InfoLbl).CornerRadius=UDim.new(0,6)
-
 -- MISC section
 local MiscF=MkScroll()
 SecLbl(MiscF,"Misc",6)
@@ -534,7 +502,6 @@ lc.MouseButton1Click:Connect(function()
     lc.Text="✓ Low CPU Active"
 end)
 Frames["Misc"]=MiscF
-
 -- SHOW SECTION
 local function ShowSec(name)
     CurSec=name
@@ -545,7 +512,6 @@ local function ShowSec(name)
         b.TextColor3=n==name and Color3.fromRGB(200,140,255) or Color3.fromRGB(180,180,200)
     end
 end
-
 -- SIDEBAR BUTTONS
 for _,sec in ipairs({"Farm","Misc"}) do
     local b=Instance.new("TextButton",SList)
@@ -557,14 +523,12 @@ for _,sec in ipairs({"Farm","Misc"}) do
     b.MouseButton1Click:Connect(function() ShowSec(sec) end)
     SBtns[sec]=b
 end
-
 -- KEYBIND: RightAlt toggle
 UIS.InputBegan:Connect(function(i,gpe)
     if not gpe and i.KeyCode==Enum.KeyCode.RightAlt then
         Win.Visible=not Win.Visible
     end
 end)
-
 -- STATUS UPDATE
 task.spawn(function()
     while true do
@@ -583,6 +547,5 @@ task.spawn(function()
         task.wait(1)
     end
 end)
-
 ShowSec("Farm")
 print("[BeastHub v3] ✅ Carregado! RightAlt = abrir/fechar")
