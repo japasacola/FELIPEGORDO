@@ -45,14 +45,42 @@ local function MyLv()
     return ok and tonumber(v) or 1
 end
 
--- ── VERIFICAÇÃO DE QUEST (via Data — 100% confiável) ──
--- Retorna true se a quest correta está ativa no servidor
+-- ── VERIFICAÇÃO DE QUEST (via UI — mais confiável) ──
+-- True se a barra de quest está visível na tela
 local function QuestAtiva()
-    local ok, nome = pcall(function()
+    -- Check 1: frame de quest visível no PlayerGui
+    local ok1, v1 = pcall(function()
+        local main = LP.PlayerGui:FindFirstChild("Main")
+        if not main then return false end
+        local q = main:FindFirstChild("Quest")
+        return q and q.Visible == true
+    end)
+    if ok1 and v1 then return true end
+
+    -- Check 2: LP.Data.QuestName não está vazio
+    local ok2, v2 = pcall(function()
         return LP.Data.QuestName.Value
     end)
-    if not ok then return false end
-    return nome == S.QuestName
+    if ok2 and v2 and v2 ~= "" then return true end
+
+    return false
+end
+
+-- Fecha o diálogo do NPC automaticamente
+local function FecharDialogo()
+    Try(function()
+        -- Fecha via data
+        local dlg = LP.PlayerGui:FindFirstChild("Main")
+        if dlg then
+            local d = dlg:FindFirstChild("Dialogue")
+            if d then d.Visible = false end
+        end
+    end)
+    -- Pressiona E pra fechar prompt se ainda aberto
+    Try(function()
+        VIM:SendKeyEvent(true,  "E", false, game)
+        VIM:SendKeyEvent(false, "E", false, game)
+    end)
 end
 
 -- ── TELEPORTE ──
@@ -193,9 +221,11 @@ local function PegarMissao()
     if not S.QuestCF or not S.QuestName then return end
     StopFloat()
     TP(S.QuestCF)          -- vai até o NPC
-    task.wait(1)
+    task.wait(1.2)         -- espera um pouco mais pra não buggar
     -- dispara o remote REAL do BF para aceitar quest
     CommF("AskForQuest", S.QuestName, S.QuestSlot)
+    task.wait(0.5)
+    FecharDialogo()        -- fecha o diálogo do NPC
     task.wait(0.5)
     StartFloat()
 end
@@ -267,11 +297,14 @@ local function FarmLoop()
                 -- SE NÃO TEM QUEST ATIVA → pega missão primeiro
                 if not QuestAtiva() then
                     PegarMissao()
-                    task.wait(0.5)
+                    task.wait(1) -- espera a quest registrar antes de verificar de novo
                     return
                 end
 
-                -- TEM QUEST → mata mob
+                -- TEM QUEST → garante que diálogo está fechado
+                FecharDialogo()
+
+                -- mata mob
                 local mob = S.FarmMon and FindMob(S.FarmMon)
                 if mob then
                     Atacar(mob)
