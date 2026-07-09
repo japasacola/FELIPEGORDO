@@ -1,6 +1,6 @@
 -- ============================================================
---  BEAST HUB v3 — BLOX FRUITS
---  FIXED: sem travamento, GUI abre imediatamente
+--  BEAST HUB v4 — BLOX FRUITS
+--  FIXES: ataca do AR | quest auto | kill rápido | só fighting style
 --  Executor: Synapse X / KRNL / Fluxus / Delta
 -- ============================================================
 
@@ -59,19 +59,20 @@ local function TP(cf)
     end)
 end
 
--- CommF_ invoke
+-- CommF_ invoke (returns result)
 local function CommF(...)
     local args = {...}
-    Try(function()
-        RS.Remotes.CommF_:InvokeServer(table.unpack(args))
+    local ok, res = pcall(function()
+        return RS.Remotes.CommF_:InvokeServer(table.unpack(args))
     end)
+    return ok and res or nil
 end
 
--- Virtual key press
-local function Key(k)
+-- Mouse LEFT CLICK (fighting style only — no skills)
+local function Click()
     Try(function()
-        VIM:SendKeyEvent(true,  k, false, game)
-        VIM:SendKeyEvent(false, k, false, game)
+        VIM:SendMouseButtonEvent(0, 0, 0, true,  game, 1)
+        VIM:SendMouseButtonEvent(0, 0, 0, false, game, 1)
     end)
 end
 
@@ -164,17 +165,41 @@ end
 -- ║   FARM LOGIC     ║
 -- ╚══════════════════╝
 local function HasQuest()
+    -- check quest label visible OR quest progress bar exists
     local ok, v = pcall(function()
-        return LP.PlayerGui.Main.Quest.Visible
+        local main = LP.PlayerGui:FindFirstChild("Main")
+        if not main then return false end
+        local q = main:FindFirstChild("Quest")
+        return q and q.Visible
     end)
     return ok and v
 end
 
 local function AcceptQuest()
     if not S.QuestCF or not S.QuestName then return end
+
+    -- 1. TP to quest NPC
     TP(S.QuestCF)
-    task.wait(0.7)
+    task.wait(0.8)
+
+    -- 2. Fire the real CommF_ remote (primary method)
     CommF("AskForQuest", S.QuestName, S.QuestSlot)
+    task.wait(0.5)
+
+    -- 3. Fallback: fire any quest proximity prompt nearby
+    if not HasQuest() then
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("ProximityPrompt") then
+                local t = (v.ActionText..v.ObjectText):lower()
+                if t:find("quest") or t:find("miss") then
+                    pcall(fireproximityprompt, v)
+                    task.wait(0.3)
+                    break
+                end
+            end
+        end
+    end
+
     task.wait(0.3)
 end
 
@@ -192,28 +217,54 @@ local function Attack(mob)
     if not mob then return end
     local mr = mob:FindFirstChild("HumanoidRootPart")
     if not mr then return end
-    TP(mr.CFrame * CFrame.new(0, 3, 4))
-    task.wait(0.05)
-    Key("Z") task.wait(0.05)
-    Key("X") task.wait(0.05)
-    Key("C")
+
+    -- TP ACIMA do mob para atacar do ar e não levar dano
+    -- Fica 20 studs acima e levemente atrás
+    TP(mr.CFrame * CFrame.new(0, 20, 0))
+    task.wait(0.03)
+
+    -- Aponta o mouse pro mob (para o fighting style acertar)
+    Try(function()
+        local cam = workspace.CurrentCamera
+        local screenPos, onScreen = cam:WorldToScreenPoint(mr.Position)
+        if onScreen then
+            VIM:SendMouseMoveEvent(screenPos.X, screenPos.Y, game)
+        end
+    end)
+
+    -- Clique do mouse = fighting style attack (SEM skills Z/X/C)
+    Click()
+    task.wait(0.03)
+    Click()
+    task.wait(0.03)
+    Click()
 end
 
 local function FarmLoop()
     return task.spawn(function()
+        local questTimer = 0
         while S.AutoFarm do
             Try(function()
                 if not IsAlive() then task.wait(2) return end
+
                 UpdateQuest()
-                if not HasQuest() then AcceptQuest() end
+
+                -- Verifica quest a cada 5 segundos (não a cada frame)
+                if not HasQuest() and (tick() - questTimer) > 5 then
+                    questTimer = tick()
+                    AcceptQuest()
+                end
+
                 local mob = S.FarmMon and FindMob(S.FarmMon)
                 if mob then
                     Attack(mob)
                 elseif S.FarmCF then
+                    -- Sem mob na area, TP pro spawn
                     TP(S.FarmCF)
+                    task.wait(0.5)
                 end
             end)
-            task.wait(0.1)
+            task.wait(0.05) -- loop mais rápido
         end
     end)
 end
