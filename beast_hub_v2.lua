@@ -36,11 +36,17 @@ local function MyLv()
     return ok and tonumber(v) or 1
 end
 
--- ── VERIFICAÇÃO DE QUEST (igual script ref) ──
--- LP.Data.QuestName.Value == "" = sem quest ativa
+-- ── VERIFICAÇÃO DE QUEST (igual script ref: Quest.Visible) ──
+-- Ref usa: if d.PlayerGui.Main.Quest.Visible == false → sem quest
 local function QuestVazia()
-    local ok, v = pcall(function() return LP.Data.QuestName.Value end)
-    return (not ok) or (v == nil) or (v == "")
+    local ok, v = pcall(function()
+        return LP.PlayerGui.Main.Quest.Visible
+    end)
+    -- se Quest.Visible == false → sem quest ativa
+    if ok then return not v end
+    -- fallback: Data.QuestName
+    local ok2, v2 = pcall(function() return LP.Data.QuestName.Value end)
+    return (not ok2) or (v2 == nil) or (v2 == "")
 end
 
 -- ── FECHAR DIALOGO (igual DropFruits do script ref) ──
@@ -177,10 +183,20 @@ local function CheckQuest()
     end
 end
 
--- ── ACHAR MOB ──
+-- ── ACHAR MOB (igual GetConnectionEnemies do script ref) ──
+-- Procura em workspace.Enemies E em ReplicatedStorage
 local function FindMob(nome)
+    -- workspace.Enemies (padrão)
     for _, m in ipairs(workspace.Enemies:GetChildren()) do
         if m.Name == nome then
+            local mh = m:FindFirstChildOfClass("Humanoid")
+            local mr = m:FindFirstChild("HumanoidRootPart")
+            if mh and mr and mh.Health > 0 then return m end
+        end
+    end
+    -- ReplicatedStorage (mobs especiais)
+    for _, m in ipairs(game:GetService("ReplicatedStorage"):GetChildren()) do
+        if m:IsA("Model") and m.Name == nome then
             local mh = m:FindFirstChildOfClass("Humanoid")
             local mr = m:FindFirstChild("HumanoidRootPart")
             if mh and mr and mh.Health > 0 then return m end
@@ -233,22 +249,26 @@ local function StartFarm()
                 if QuestVazia() then
                     -- ═══ SEM QUEST: vai ao NPC e pega ═══
                     Float(false)
-                    TP(CFrameQuest)         -- TP pro NPC
+                    TP(CFrameQuest)
                     task.wait(0.8)
-                    -- aceita quest via remote (igual script ref)
                     CommF("AskForQuest", NameQuest, LevelQuest)
-                    task.wait(0.3)
-                    -- fecha dialogo (igual DropFruits do script ref)
+                    task.wait(0.4)
                     FecharDialogo()
-                    task.wait(0.3)
+                    task.wait(0.4)
                     Float(true)
+
+                    -- TIMEOUT: espera quest aparecer (max 3s)
+                    -- Se não aparecer, vai farmar mesmo assim
+                    local t0 = tick()
+                    while QuestVazia() and (tick()-t0) < 3 and AutoFarm do
+                        task.wait(0.2)
+                    end
                 else
                     -- ═══ TEM QUEST: mata mob ═══
                     local mob = Mon and FindMob(Mon)
                     if mob then
                         Atacar(mob)
                     else
-                        -- sem mob: TP pro spawn
                         TP(CFrameMon)
                         task.wait(0.3)
                     end
