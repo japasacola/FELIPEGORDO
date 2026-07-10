@@ -17,7 +17,7 @@ local World3 = game.PlaceId==7449423635 or game.PlaceId==100117331123089
 
 local AutoFarm = false
 local Threads  = {}
-local Mon, NameQuest, LevelQuest, CFrameMon
+local Mon, NameQuest, LevelQuest, CFrameQuest, CFrameMon
 
 local function Try(fn) pcall(fn) end
 local function Hum()  local c=LP.Character; return c and c:FindFirstChildOfClass("Humanoid") end
@@ -58,72 +58,73 @@ end
 local function CheckQuest()
     local lv=MyLv()
     if World1 then
-        if     lv<=9   then Mon="Bandit";              NameQuest="BanditQuest1";  LevelQuest=1; CFrameMon=CFrame.new(1045,27,1560)
-        elseif lv<=14  then Mon="Monkey";              NameQuest="JungleQuest";   LevelQuest=1; CFrameMon=CFrame.new(-1448,67,11)
-        elseif lv<=29  then Mon="Gorilla";             NameQuest="JungleQuest";   LevelQuest=2; CFrameMon=CFrame.new(-1129,40,-525)
-        elseif lv<=39  then Mon="Pirate";              NameQuest="BuggyQuest1";   LevelQuest=1; CFrameMon=CFrame.new(-1103,13,3896)
-        elseif lv<=59  then Mon="Brute";               NameQuest="BuggyQuest1";   LevelQuest=2; CFrameMon=CFrame.new(-1140,14,4322)
-        elseif lv<=74  then Mon="Desert Bandit";       NameQuest="DesertQuest";   LevelQuest=1; CFrameMon=CFrame.new(924,6,4481)
-        elseif lv<=89  then Mon="Desert Officer";      NameQuest="DesertQuest";   LevelQuest=2; CFrameMon=CFrame.new(1608,8,4371)
-        elseif lv<=99  then Mon="Snow Bandit";         NameQuest="SnowQuest";     LevelQuest=1; CFrameMon=CFrame.new(1354,87,-1393)
-        elseif lv<=119 then Mon="Snowman";             NameQuest="SnowQuest";     LevelQuest=2; CFrameMon=CFrame.new(1201,144,-1550)
-        elseif lv<=149 then Mon="Chief Petty Officer"; NameQuest="MarineQuest2";  LevelQuest=1; CFrameMon=CFrame.new(-4881,22,4273)
-        elseif lv<=174 then Mon="Sky Bandit";          NameQuest="SkyQuest";      LevelQuest=1; CFrameMon=CFrame.new(-4953,295,-2899)
-        elseif lv<=189 then Mon="Dark Master";         NameQuest="SkyQuest";      LevelQuest=2; CFrameMon=CFrame.new(-5259,391,-2229)
-        elseif lv<=209 then Mon="Prisoner";            NameQuest="PrisonerQuest"; LevelQuest=1; CFrameMon=CFrame.new(5098,-0,474)
-        elseif lv<=249 then Mon="Dangerous Prisoner";  NameQuest="PrisonerQuest"; LevelQuest=2; CFrameMon=CFrame.new(5654,15,866)
-        elseif lv<=274 then Mon="Toga Warrior";        NameQuest="ColosseumQuest";LevelQuest=1; CFrameMon=CFrame.new(-1820,51,-2740)
-        elseif lv<=299 then Mon="Gladiator";           NameQuest="ColosseumQuest";LevelQuest=2; CFrameMon=CFrame.new(-1292,56,-3339)
-        elseif lv<=324 then Mon="Military Soldier";    NameQuest="MagmaQuest";    LevelQuest=1; CFrameMon=CFrame.new(-5411,11,8454)
-        elseif lv<=374 then Mon="Military Spy";        NameQuest="MagmaQuest";    LevelQuest=2; CFrameMon=CFrame.new(-5802,86,8828)
-        elseif lv<=399 then Mon="Fishman Warrior";     NameQuest="FishmanQuest";  LevelQuest=1; CFrameMon=CFrame.new(60878,18,1543); CommF("requestEntrance",Vector3.new(61163,11,1819))
-        elseif lv<=449 then Mon="Fishman Commando";    NameQuest="FishmanQuest";  LevelQuest=2; CFrameMon=CFrame.new(61922,18,1493); CommF("requestEntrance",Vector3.new(61163,11,1819))
-        elseif lv<=474 then Mon="God's Guard";         NameQuest="SkyExp1Quest";  LevelQuest=1; CFrameMon=CFrame.new(-4710,845,-1927); CommF("requestEntrance",Vector3.new(-4607,872,-1667))
-        elseif lv<=524 then Mon="Shanda";              NameQuest="SkyExp1Quest";  LevelQuest=2; CFrameMon=CFrame.new(-7678,5566,-497)
-        elseif lv<=549 then Mon="Royal Squad";         NameQuest="SkyExp2Quest";  LevelQuest=1; CFrameMon=CFrame.new(-7624,5658,-1467)
-        elseif lv<=624 then Mon="Royal Soldier";       NameQuest="SkyExp2Quest";  LevelQuest=2; CFrameMon=CFrame.new(-7836,5645,-1790)
-        elseif lv<=649 then Mon="Galley Pirate";       NameQuest="FountainQuest"; LevelQuest=1; CFrameMon=CFrame.new(5551,78,3930)
-        else               Mon="Galley Captain";       NameQuest="FountainQuest"; LevelQuest=2; CFrameMon=CFrame.new(5441,42,4950)
+        if     lv<=9   then Mon="Bandit";              NameQuest="BanditQuest1";  LevelQuest=1; CFrameQuest=CFrame.new(1059,15,1550); CFrameMon=CFrame.new(1045,27,1560)
+        elseif lv<=14  then Mon="Monkey";              NameQuest="JungleQuest";   LevelQuest=1; CFrameQuest=CFrame.new(-1598,35,153);   CFrameMon=CFrame.new(-1448,67,11)
+        elseif lv<=29  then Mon="Gorilla";             NameQuest="JungleQuest";   LevelQuest=2; CFrameQuest=CFrame.new(-1598,35,153);   CFrameMon=CFrame.new(-1129,40,-525)
+        elseif lv<=39  then Mon="Pirate";              NameQuest="BuggyQuest1";   LevelQuest=1; CFrameQuest=CFrame.new(-1141,4,3831);   CFrameMon=CFrame.new(-1103,13,3896)
+        elseif lv<=59  then Mon="Brute";               NameQuest="BuggyQuest1";   LevelQuest=2; CFrameQuest=CFrame.new(-1141,4,3831);   CFrameMon=CFrame.new(-1140,14,4322)
+        elseif lv<=74  then Mon="Desert Bandit";       NameQuest="DesertQuest";   LevelQuest=1; CFrameQuest=CFrame.new(894,5,4392);     CFrameMon=CFrame.new(924,6,4481)
+        elseif lv<=89  then Mon="Desert Officer";      NameQuest="DesertQuest";   LevelQuest=2; CFrameQuest=CFrame.new(894,5,4392);     CFrameMon=CFrame.new(1608,8,4371)
+        elseif lv<=99  then Mon="Snow Bandit";         NameQuest="SnowQuest";     LevelQuest=1; CFrameQuest=CFrame.new(1389,88,-1298);  CFrameMon=CFrame.new(1354,87,-1393)
+        elseif lv<=119 then Mon="Snowman";             NameQuest="SnowQuest";     LevelQuest=2; CFrameQuest=CFrame.new(1389,88,-1298);  CFrameMon=CFrame.new(1201,144,-1550)
+        elseif lv<=149 then Mon="Chief Petty Officer"; NameQuest="MarineQuest2";  LevelQuest=1; CFrameQuest=CFrame.new(-5039,27,4324);  CFrameMon=CFrame.new(-4881,22,4273)
+        elseif lv<=174 then Mon="Sky Bandit";          NameQuest="SkyQuest";      LevelQuest=1; CFrameQuest=CFrame.new(-4839,716,-2619); CFrameMon=CFrame.new(-4953,295,-2899)
+        elseif lv<=189 then Mon="Dark Master";         NameQuest="SkyQuest";      LevelQuest=2; CFrameQuest=CFrame.new(-4839,716,-2619); CFrameMon=CFrame.new(-5259,391,-2229)
+        elseif lv<=209 then Mon="Prisoner";            NameQuest="PrisonerQuest"; LevelQuest=1; CFrameQuest=CFrame.new(5308,1,475);    CFrameMon=CFrame.new(5098,0,474)
+        elseif lv<=249 then Mon="Dangerous Prisoner";  NameQuest="PrisonerQuest"; LevelQuest=2; CFrameQuest=CFrame.new(5308,1,475);    CFrameMon=CFrame.new(5654,15,866)
+        elseif lv<=274 then Mon="Toga Warrior";        NameQuest="ColosseumQuest";LevelQuest=1; CFrameQuest=CFrame.new(-1580,6,-2986);  CFrameMon=CFrame.new(-1820,51,-2740)
+        elseif lv<=299 then Mon="Gladiator";           NameQuest="ColosseumQuest";LevelQuest=2; CFrameQuest=CFrame.new(-1580,6,-2986);  CFrameMon=CFrame.new(-1292,56,-3339)
+        elseif lv<=324 then Mon="Military Soldier";    NameQuest="MagmaQuest";    LevelQuest=1; CFrameQuest=CFrame.new(-5313,10,8515);  CFrameMon=CFrame.new(-5411,11,8454)
+        elseif lv<=374 then Mon="Military Spy";        NameQuest="MagmaQuest";    LevelQuest=2; CFrameQuest=CFrame.new(-5313,10,8515);  CFrameMon=CFrame.new(-5802,86,8828)
+        elseif lv<=399 then Mon="Fishman Warrior";     NameQuest="FishmanQuest";  LevelQuest=1; CFrameQuest=CFrame.new(61122,18,1569);  CFrameMon=CFrame.new(60878,18,1543); CommF("requestEntrance",Vector3.new(61163,11,1819))
+        elseif lv<=449 then Mon="Fishman Commando";    NameQuest="FishmanQuest";  LevelQuest=2; CFrameQuest=CFrame.new(61122,18,1569);  CFrameMon=CFrame.new(61922,18,1493); CommF("requestEntrance",Vector3.new(61163,11,1819))
+        elseif lv<=474 then Mon="God's Guard";         NameQuest="SkyExp1Quest";  LevelQuest=1; CFrameQuest=CFrame.new(-4721,843,-1949); CFrameMon=CFrame.new(-4710,845,-1927); CommF("requestEntrance",Vector3.new(-4607,872,-1667))
+        elseif lv<=524 then Mon="Shanda";              NameQuest="SkyExp1Quest";  LevelQuest=2; CFrameQuest=CFrame.new(-7859,5544,-381); CFrameMon=CFrame.new(-7678,5566,-497)
+        elseif lv<=549 then Mon="Royal Squad";         NameQuest="SkyExp2Quest";  LevelQuest=1; CFrameQuest=CFrame.new(-7906,5634,-1411); CFrameMon=CFrame.new(-7624,5658,-1467)
+        elseif lv<=624 then Mon="Royal Soldier";       NameQuest="SkyExp2Quest";  LevelQuest=2; CFrameQuest=CFrame.new(-7906,5634,-1411); CFrameMon=CFrame.new(-7836,5645,-1790)
+        elseif lv<=649 then Mon="Galley Pirate";       NameQuest="FountainQuest"; LevelQuest=1; CFrameQuest=CFrame.new(5259,37,4050);   CFrameMon=CFrame.new(5551,78,3930)
+        else               Mon="Galley Captain";       NameQuest="FountainQuest"; LevelQuest=2; CFrameQuest=CFrame.new(5259,37,4050);   CFrameMon=CFrame.new(5441,42,4950)
         end
     elseif World2 then
-        if     lv<=724  then Mon="Raider";             NameQuest="Area1Quest";        LevelQuest=1; CFrameMon=CFrame.new(-728,52,2345)
-        elseif lv<=774  then Mon="Mercenary";          NameQuest="Area1Quest";        LevelQuest=2; CFrameMon=CFrame.new(-1004,80,1424)
-        elseif lv<=799  then Mon="Swan Pirate";        NameQuest="Area2Quest";        LevelQuest=1; CFrameMon=CFrame.new(1068,137,1322)
-        elseif lv<=874  then Mon="Factory Staff";      NameQuest="Area2Quest";        LevelQuest=2; CFrameMon=CFrame.new(73,81,-27)
-        elseif lv<=899  then Mon="Marine Lieutenant";  NameQuest="MarineQuest3";      LevelQuest=1; CFrameMon=CFrame.new(-2821,75,-3070)
-        elseif lv<=949  then Mon="Marine Captain";     NameQuest="MarineQuest3";      LevelQuest=2; CFrameMon=CFrame.new(-1861,80,-3254)
-        elseif lv<=974  then Mon="Zombie";             NameQuest="ZombieQuest";       LevelQuest=1; CFrameMon=CFrame.new(-5657,78,-928)
-        elseif lv<=999  then Mon="Vampire";            NameQuest="ZombieQuest";       LevelQuest=2; CFrameMon=CFrame.new(-6037,32,-1340)
-        elseif lv<=1049 then Mon="Snow Trooper";       NameQuest="SnowMountainQuest"; LevelQuest=1; CFrameMon=CFrame.new(549,427,-5563)
-        elseif lv<=1099 then Mon="Winter Warrior";     NameQuest="SnowMountainQuest"; LevelQuest=2; CFrameMon=CFrame.new(1142,475,-5199)
-        elseif lv<=1124 then Mon="Lab Subordinate";    NameQuest="IceSideQuest";      LevelQuest=1; CFrameMon=CFrame.new(-5707,15,-4513)
-        elseif lv<=1174 then Mon="Horned Warrior";     NameQuest="IceSideQuest";      LevelQuest=2; CFrameMon=CFrame.new(-6341,15,-5723)
-        elseif lv<=1199 then Mon="Magma Ninja";        NameQuest="FireSideQuest";     LevelQuest=1; CFrameMon=CFrame.new(-5449,76,-5808)
-        else               Mon="Lava Pirate";          NameQuest="FireSideQuest";     LevelQuest=2; CFrameMon=CFrame.new(-4857,74,-5905)
+        if     lv<=724  then Mon="Raider";             NameQuest="Area1Quest";        LevelQuest=1; CFrameQuest=CFrame.new(-429,71,1836);   CFrameMon=CFrame.new(-728,52,2345)
+        elseif lv<=774  then Mon="Mercenary";          NameQuest="Area1Quest";        LevelQuest=2; CFrameQuest=CFrame.new(-429,71,1836);   CFrameMon=CFrame.new(-1004,80,1424)
+        elseif lv<=799  then Mon="Swan Pirate";        NameQuest="Area2Quest";        LevelQuest=1; CFrameQuest=CFrame.new(638,71,918);     CFrameMon=CFrame.new(1068,137,1322)
+        elseif lv<=874  then Mon="Factory Staff";      NameQuest="Area2Quest";        LevelQuest=2; CFrameQuest=CFrame.new(632,73,918);     CFrameMon=CFrame.new(73,81,-27)
+        elseif lv<=899  then Mon="Marine Lieutenant";  NameQuest="MarineQuest3";      LevelQuest=1; CFrameQuest=CFrame.new(-2440,71,-3216);  CFrameMon=CFrame.new(-2821,75,-3070)
+        elseif lv<=949  then Mon="Marine Captain";     NameQuest="MarineQuest3";      LevelQuest=2; CFrameQuest=CFrame.new(-2440,71,-3216);  CFrameMon=CFrame.new(-1861,80,-3254)
+        elseif lv<=974  then Mon="Zombie";             NameQuest="ZombieQuest";       LevelQuest=1; CFrameQuest=CFrame.new(-5497,47,-795);   CFrameMon=CFrame.new(-5657,78,-928)
+        elseif lv<=999  then Mon="Vampire";            NameQuest="ZombieQuest";       LevelQuest=2; CFrameQuest=CFrame.new(-5497,47,-795);   CFrameMon=CFrame.new(-6037,32,-1340)
+        elseif lv<=1049 then Mon="Snow Trooper";       NameQuest="SnowMountainQuest"; LevelQuest=1; CFrameQuest=CFrame.new(609,400,-5372);  CFrameMon=CFrame.new(549,427,-5563)
+        elseif lv<=1099 then Mon="Winter Warrior";     NameQuest="SnowMountainQuest"; LevelQuest=2; CFrameQuest=CFrame.new(609,400,-5372);  CFrameMon=CFrame.new(1142,475,-5199)
+        elseif lv<=1124 then Mon="Lab Subordinate";    NameQuest="IceSideQuest";      LevelQuest=1; CFrameQuest=CFrame.new(-6064,15,-4902);  CFrameMon=CFrame.new(-5707,15,-4513)
+        elseif lv<=1174 then Mon="Horned Warrior";     NameQuest="IceSideQuest";      LevelQuest=2; CFrameQuest=CFrame.new(-6064,15,-4902);  CFrameMon=CFrame.new(-6341,15,-5723)
+        elseif lv<=1199 then Mon="Magma Ninja";        NameQuest="FireSideQuest";     LevelQuest=1; CFrameQuest=CFrame.new(-5428,15,-5299);  CFrameMon=CFrame.new(-5449,76,-5808)
+        else               Mon="Lava Pirate";          NameQuest="FireSideQuest";     LevelQuest=2; CFrameQuest=CFrame.new(-5428,15,-5299);  CFrameMon=CFrame.new(-4857,74,-5905)
         end
     elseif World3 then
-        if     lv<=1524 then Mon="Jungle Pirate";       NameQuest="ForestQuest";   LevelQuest=1; CFrameMon=CFrame.new(-11778,426,-10592)
-        elseif lv<=1574 then Mon="Forest Pirate";       NameQuest="ForestQuest";   LevelQuest=2; CFrameMon=CFrame.new(-13446,413,-7760)
-        elseif lv<=1624 then Mon="Mythological Pirate"; NameQuest="MythQuest";     LevelQuest=1; CFrameMon=CFrame.new(-13510,584,-6987)
-        elseif lv<=1674 then Mon="Musketeer Pirate";    NameQuest="MythQuest";     LevelQuest=2; CFrameMon=CFrame.new(-13282,496,-9565)
-        elseif lv<=1724 then Mon="Fishman Raider";      NameQuest="FishDeepQuest"; LevelQuest=1; CFrameMon=CFrame.new(-10941,332,-8760)
-        elseif lv<=1799 then Mon="Fishman Captain";     NameQuest="FishDeepQuest"; LevelQuest=2; CFrameMon=CFrame.new(-11035,332,-9087)
-        elseif lv<=1849 then Mon="Reborn Skeleton";     NameQuest="WyperQuest";    LevelQuest=1; CFrameMon=CFrame.new(-8764,142,5963)
-        elseif lv<=1924 then Mon="Living Zombie";       NameQuest="WyperQuest";    LevelQuest=2; CFrameMon=CFrame.new(-10227,421,6161)
-        elseif lv<=2024 then Mon="Peanut Scout";        NameQuest="PeanutQuest";   LevelQuest=1; CFrameMon=CFrame.new(-1993,187,-10103)
-        elseif lv<=2074 then Mon="Peanut President";    NameQuest="PeanutQuest";   LevelQuest=2; CFrameMon=CFrame.new(-2215,159,-10474)
-        elseif lv<=2124 then Mon="Ice Cream Chef";      NameQuest="CakeQuest";     LevelQuest=1; CFrameMon=CFrame.new(-877,118,-11032)
-        elseif lv<=2174 then Mon="Ice Cream Commander"; NameQuest="CakeQuest";     LevelQuest=2; CFrameMon=CFrame.new(-877,118,-11032)
-        elseif lv<=2224 then Mon="Cookie Crafter";      NameQuest="CakeFarm1";     LevelQuest=1; CFrameMon=CFrame.new(-2021,38,-12028)
-        elseif lv<=2274 then Mon="Cake Guard";          NameQuest="CakeFarm1";     LevelQuest=2; CFrameMon=CFrame.new(-2024,38,-12026)
-        elseif lv<=2349 then Mon="Baking Staff";        NameQuest="CakeFarm2";     LevelQuest=1; CFrameMon=CFrame.new(-1932,38,-12848)
-        elseif lv<=2449 then Mon="Head Baker";          NameQuest="CakeFarm2";     LevelQuest=2; CFrameMon=CFrame.new(-1932,38,-12848)
-        elseif lv<=2524 then Mon="Cocoa Warrior";       NameQuest="CakeFarm3";     LevelQuest=1; CFrameMon=CFrame.new(95,73,-12309)
-        elseif lv<=2624 then Mon="Chocolate Bar Battler";NameQuest="CakeFarm3";    LevelQuest=2; CFrameMon=CFrame.new(647,42,-12401)
-        else               Mon="Candy Rebel";           NameQuest="CakeFarm4";     LevelQuest=2; CFrameMon=CFrame.new(47,61,-12889)
+        if     lv<=1524 then Mon="Jungle Pirate";       NameQuest="ForestQuest";   LevelQuest=1; CFrameQuest=CFrame.new(-12289,331,-10577); CFrameMon=CFrame.new(-11778,426,-10592)
+        elseif lv<=1574 then Mon="Forest Pirate";       NameQuest="ForestQuest";   LevelQuest=2; CFrameQuest=CFrame.new(-12289,331,-10577); CFrameMon=CFrame.new(-13446,413,-7760)
+        elseif lv<=1624 then Mon="Mythological Pirate"; NameQuest="MythQuest";     LevelQuest=1; CFrameQuest=CFrame.new(-13650,584,-6987);  CFrameMon=CFrame.new(-13510,584,-6987)
+        elseif lv<=1674 then Mon="Musketeer Pirate";    NameQuest="MythQuest";     LevelQuest=2; CFrameQuest=CFrame.new(-13650,584,-6987);  CFrameMon=CFrame.new(-13282,496,-9565)
+        elseif lv<=1724 then Mon="Fishman Raider";      NameQuest="FishDeepQuest"; LevelQuest=1; CFrameQuest=CFrame.new(-10941,332,-8760);  CFrameMon=CFrame.new(-10941,332,-8760)
+        elseif lv<=1799 then Mon="Fishman Captain";     NameQuest="FishDeepQuest"; LevelQuest=2; CFrameQuest=CFrame.new(-10941,332,-8760);  CFrameMon=CFrame.new(-11035,332,-9087)
+        elseif lv<=1849 then Mon="Reborn Skeleton";     NameQuest="WyperQuest";    LevelQuest=1; CFrameQuest=CFrame.new(-8764,142,5963);   CFrameMon=CFrame.new(-8764,142,5963)
+        elseif lv<=1924 then Mon="Living Zombie";       NameQuest="WyperQuest";    LevelQuest=2; CFrameQuest=CFrame.new(-8764,142,5963);   CFrameMon=CFrame.new(-10227,421,6161)
+        elseif lv<=2024 then Mon="Peanut Scout";        NameQuest="PeanutQuest";   LevelQuest=1; CFrameQuest=CFrame.new(-1993,187,-10103);  CFrameMon=CFrame.new(-1993,187,-10103)
+        elseif lv<=2074 then Mon="Peanut President";    NameQuest="PeanutQuest";   LevelQuest=2; CFrameQuest=CFrame.new(-1993,187,-10103);  CFrameMon=CFrame.new(-2215,159,-10474)
+        elseif lv<=2124 then Mon="Ice Cream Chef";      NameQuest="CakeQuest";     LevelQuest=1; CFrameQuest=CFrame.new(-877,118,-11032);   CFrameMon=CFrame.new(-877,118,-11032)
+        elseif lv<=2174 then Mon="Ice Cream Commander"; NameQuest="CakeQuest";     LevelQuest=2; CFrameQuest=CFrame.new(-877,118,-11032);   CFrameMon=CFrame.new(-877,118,-11032)
+        elseif lv<=2224 then Mon="Cookie Crafter";      NameQuest="CakeFarm1";     LevelQuest=1; CFrameQuest=CFrame.new(-2021,38,-12028);   CFrameMon=CFrame.new(-2021,38,-12028)
+        elseif lv<=2274 then Mon="Cake Guard";          NameQuest="CakeFarm1";     LevelQuest=2; CFrameQuest=CFrame.new(-2021,38,-12028);   CFrameMon=CFrame.new(-2024,38,-12026)
+        elseif lv<=2349 then Mon="Baking Staff";        NameQuest="CakeFarm2";     LevelQuest=1; CFrameQuest=CFrame.new(-1932,38,-12848);   CFrameMon=CFrame.new(-1932,38,-12848)
+        elseif lv<=2449 then Mon="Head Baker";          NameQuest="CakeFarm2";     LevelQuest=2; CFrameQuest=CFrame.new(-1932,38,-12848);   CFrameMon=CFrame.new(-1932,38,-12848)
+        elseif lv<=2524 then Mon="Cocoa Warrior";       NameQuest="CakeFarm3";     LevelQuest=1; CFrameQuest=CFrame.new(95,73,-12309);      CFrameMon=CFrame.new(95,73,-12309)
+        elseif lv<=2624 then Mon="Chocolate Bar Battler";NameQuest="CakeFarm3";    LevelQuest=2; CFrameQuest=CFrame.new(95,73,-12309);      CFrameMon=CFrame.new(647,42,-12401)
+        else               Mon="Candy Rebel";           NameQuest="CakeFarm4";     LevelQuest=2; CFrameQuest=CFrame.new(116,36,-12478);     CFrameMon=CFrame.new(47,61,-12889)
         end
     else
-        Mon="Bandit"; NameQuest="BanditQuest1"; LevelQuest=1; CFrameMon=CFrame.new(1045,27,1560)
+        Mon="Bandit"; NameQuest="BanditQuest1"; LevelQuest=1
+        CFrameQuest=CFrame.new(1059,15,1550); CFrameMon=CFrame.new(1045,27,1560)
     end
 end
 
@@ -173,18 +174,26 @@ local function StartFarm()
         while AutoFarm do
             Try(function()
                 CheckQuest()
-                -- dispara CommF_ de qualquer lugar, a cada 10s
-                -- servidor ignora se quest ja ativa
-                -- aceita nova se terminou
+                -- BF requer proximidade para aceitar quest
+                -- TP rapido ao NPC → CommF_ → fecha dialogo → volta farmar
+                Float(false)
+                TP(CFrameQuest)
+                task.wait(0.8)
                 CommF("AskForQuest", NameQuest, LevelQuest)
-                -- fecha dialogo se abriu
+                task.wait(0.3)
+                -- fecha dialogo
                 Try(function()
                     if LP.PlayerGui.Main.Dialogue.Visible then
                         LP.PlayerGui.Main.Dialogue.Visible=false
                     end
                 end)
+                task.wait(0.2)
+                -- volta pro spawn dos mobs
+                TP(CFrameMon)
+                Float(true)
             end)
-            task.wait(10)
+            -- espera 15s antes de tentar de novo
+            task.wait(15)
         end
     end)
 
